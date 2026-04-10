@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeneBridge — Cross-Species Genetics Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050b0f;
+      --bg2: #0a1520;
+      --bg3: #0f1e2d;
+      --card: #0d1b28;
+      --border: #1a3348;
+      --border2: #1e4060;
+      --accent: #00e5ff;
+      --accent2: #00ff88;
+      --accent3: #ff6b35;
+      --accent4: #bf5fff;
+      --text: #c8e6f0;
+      --text2: #7fb3cc;
+      --text3: #3a7090;
+      --danger: #ff4757;
+      --warn: #ffa502;
+      --success: #2ed573;
+      --mono: 'Fira Code', monospace;
+      --sans: 'Inter', sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Grid noise overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Scanline effect ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px,
+          rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 4px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      background: rgba(5, 11, 15, 0.95);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent2);
+      box-shadow: 0 0 8px var(--accent2);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.8)
+      }
+    }
+
+    .status-bar {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text3);
+      display: flex;
+      gap: 20px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .status-dot.green {
+      background: var(--accent2);
+      box-shadow: 0 0 6px var(--accent2);
+    }
+
+    .status-dot.blue {
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 60px 0 40px;
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .hero-title {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-title .line1 {
+      color: var(--text);
+    }
+
+    .hero-title .line2 {
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      margin-top: 16px;
+      font-size: 15px;
+      color: var(--text2);
+      line-height: 1.7;
+      font-weight: 400;
+      max-width: 520px;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .tag {
+      font-family: var(--mono);
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 3px;
+      border: 1px solid;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .tag.blue {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .tag.green {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    .tag.orange {
+      border-color: var(--accent3);
+      color: var(--accent3);
+    }
+
+    .tag.purple {
+      border-color: var(--accent4);
+      color: var(--accent4);
+    }
+
+    /* ── Main layout ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      padding-bottom: 60px;
+    }
+
+    /* ── Panel card ── */
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .panel-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .panel-body {
+      padding: 20px;
+    }
+
+    /* ── Form ── */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    select,
+    input[type=range],
+    input[type=number],
+    input[type=text] {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 10px 14px;
+      border-radius: 3px;
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: var(--accent);
+    }
+
+    select option {
+      background: var(--bg2);
+    }
+
+    .severity-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .sev-btn {
+      padding: 10px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      color: var(--text2);
+      font-family: var(--mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .sev-btn:hover {
+      border-color: var(--border2);
+      color: var(--text);
+    }
+
+    .sev-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0, 229, 255, 0.06);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: all 0.25s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.25s ease;
+      z-index: 0;
+    }
+
+    .submit-btn:hover::before {
+      transform: scaleX(1);
+    }
+
+    .submit-btn:hover {
+      color: var(--bg);
+    }
+
+    .submit-btn span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Body display ── */
+    .body-display {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 0;
+    }
+
+    .body-toggle {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .body-toggle button {
+      padding: 8px 20px;
+      background: transparent;
+      border: none;
+      color: var(--text2);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .body-toggle button.active {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    /* ── 3D Body SVG ── */
+    #body-svg-wrap {
+      position: relative;
+      cursor: grab;
+      user-select: none;
+    }
+
+    #body-svg-wrap:active {
+      cursor: grabbing;
+    }
+
+    #body-svg-wrap svg {
+      transition: filter 0.4s;
+    }
+
+    .body-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      fill: var(--accent);
+      letter-spacing: 0.06em;
+    }
+
+    .region-overlay {
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .region-overlay.active {
+      opacity: 1;
+    }
+
+    /* ── Right panel ── */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Metrics row ── */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform 0.4s;
+    }
+
+    .metric-card.loaded::before {
+      transform: scaleX(1);
+    }
+
+    .metric-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    .metric-val {
+      font-family: var(--mono);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .metric-sub {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 4px;
+      font-family: var(--mono);
+    }
+
+    /* ── Results grid ── */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .result-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+      cursor: pointer;
+      animation: cardIn 0.4s ease both;
+    }
+
+    .result-card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+    }
+
+    .result-card.recommended {
+      border-color: rgba(0, 255, 136, 0.4);
+    }
+
+    .result-card.recommended:hover {
+      border-color: var(--accent2);
+    }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .rc-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rc-species {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .species-emoji {
+      font-size: 20px;
+    }
+
+    .species-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .species-sci {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text3);
+      font-style: italic;
+    }
+
+    .viability-badge {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent2);
+    }
+
+    .viability-badge.mid {
+      color: var(--warn);
+    }
+
+    .viability-badge.low {
+      color: var(--danger);
+    }
+
+    .rc-body {
+      padding: 14px 16px;
+    }
+
+    .score-bar-wrap {
+      margin-bottom: 12px;
+    }
+
+    .score-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text3);
+      margin-bottom: 4px;
+    }
+
+    .score-bar-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.8s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .fill-green {
+      background: var(--accent2);
+    }
+
+    .fill-blue {
+      background: var(--accent);
+    }
+
+    .fill-orange {
+      background: var(--accent3);
+    }
+
+    .fill-purple {
+      background: var(--accent4);
+    }
+
+    .gene-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .gene-chip {
+      font-family: var(--mono);
+      font-size: 9px;
+      padding: 3px 8px;
+      border-radius: 2px;
+      border: 1px solid var(--border2);
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+
+    .gene-chip:hover {
+      background: rgba(0, 229, 255, 0.08);
+      border-color: var(--accent);
+    }
+
+    .rc-recommend-badge {
+      margin-top: 10px;
+      padding: 6px 10px;
+      background: rgba(0, 255, 136, 0.08);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 3px;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--accent2);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── Summary banner ── */
+    .summary-banner {
+      background: linear-gradient(135deg, rgba(0, 229, 255, 0.06), rgba(0, 255, 136, 0.04));
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 4px;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      animation: cardIn 0.3s ease;
+    }
+
+    .sum-block {}
+
+    .sum-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .sum-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent2);
+      font-family: var(--mono);
+    }
+
+    .sum-sub {
+      font-size: 11px;
+      color: var(--text2);
+      margin-top: 2px;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      color: var(--text3);
+      text-align: center;
+      gap: 12px;
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      opacity: 0.4;
+    }
+
+    .empty-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text2);
+    }
+
+    .empty-sub {
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    /* ── Loading ── */
+    .loading-state {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      gap: 16px;
+    }
+
+    .loading-state.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    /* ── Error ── */
+    .error-bar {
+      display: none;
+      background: rgba(255, 71, 87, 0.08);
+      border: 1px solid rgba(255, 71, 87, 0.3);
+      border-radius: 3px;
+      padding: 12px 16px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--danger);
+      margin-bottom: 16px;
+    }
+
+    .error-bar.active {
+      display: block;
+    }
+
+    /* ── Gene detail modal ── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      width: 480px;
+      max-width: 90vw;
+      padding: 28px;
+      animation: cardIn 0.2s ease;
+    }
+
+    .modal-title {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .modal-sub {
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 20px;
+      font-family: var(--mono);
+    }
+
+    .modal-stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .modal-stat-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+
+    .modal-stat-val {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .modal-close {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: border-color 0.2s;
+    }
+
+    .modal-close:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* ── Condition info box ── */
+    .cond-info {
+      background: rgba(0, 229, 255, 0.04);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 3px;
+      padding: 14px;
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--text2);
+      line-height: 1.6;
+      display: none;
+    }
+
+    .cond-info.active {
+      display: block;
+    }
+
+    .cond-info-title {
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+
+    /* ── Rotation label ── */
+    .rotate-hint {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--text3);
+      text-align: center;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Hologram Animation ── */
+    @keyframes holorotate {
+      0% {
+        transform: rotateY(0deg);
+      }
+
+      100% {
+        transform: rotateY(360deg);
+      }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metrics-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="wrap header-inner">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        GENEBRIDGE
+      </div>
+      <div class="status-bar">
+        <div class="status-item" id="status-ml">
+          <div class="status-dot" id="ml-dot" style="background:var(--text3)"></div>
+          <span id="ml-label">CHECKING ML...</span>
+        </div>
+        <div class="status-item" id="status-data">
+          <div class="status-dot" id="data-dot" style="background:var(--text3)"></div>
+          <span id="data-label">LOADING DATA...</span>
+        </div>
+        <div class="status-item" id="api-status">
+          <div class="status-dot" id="api-dot" style="background:var(--text3)"></div>
+          <span id="api-label">BACKEND PROBE...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1 class="hero-title">
+          <span class="line1">Cross-Species</span><br>
+          <span class="line2">Genetic Therapy</span><br>
+          <span class="line1">Intelligence</span>
+        </h1>
+        <p class="hero-sub" id="hero-sub">
+          ML-powered platform mapping human disease genes to cross-species orthologs.
+          Connecting to backend to load model details...
+        </p>
+        <div class="tag-row" id="tag-row"></div>
+      </div>
+      <div style="text-align:center">
+        <!-- Decorative gene network SVG -->
+        <svg width="280" height="220" viewBox="0 0 280 220" style="opacity:0.7">
+          <defs>
+            <radialGradient id="ng" cx="50%" cy="50%">
+              <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3" />
+              <stop offset="100%" stop-color="#00e5ff" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="140" cy="110" r="80" fill="url(#ng)" />
+          <g id="net-nodes"></g>
+          <g id="net-lines"></g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Metrics row -->
+    <div class="metrics-row" id="metrics-row">
+      <div class="metric-card" id="mc-acc">
+        <div class="metric-label">Best Candidate Viability</div>
+        <div class="metric-val" id="mv-acc">&mdash;</div>
+        <div class="metric-sub">Ensemble Prediction</div>
+      </div>
+      <div class="metric-card" id="mc-rf">
+        <div class="metric-label">Random Forest Match</div>
+        <div class="metric-val" id="mv-rf">&mdash;</div>
+        <div class="metric-sub">Probability Score</div>
+      </div>
+      <div class="metric-card" id="mc-auc">
+        <div class="metric-label">Grad. Boost Match</div>
+        <div class="metric-val" id="mv-auc">&mdash;</div>
+        <div class="metric-sub">Probability Score</div>
+      </div>
+      <div class="metric-card" id="mc-svm">
+        <div class="metric-label">Support Vector Match</div>
+        <div class="metric-val" id="mv-svm">&mdash;</div>
+        <div class="metric-sub">Calibrated Score</div>
+      </div>
+    </div>
+
+    <div class="main-grid" style="margin-top:24px">
+
+      <!-- Left: Input panel -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Patient Input</span>
+            <span class="panel-num">01 / 03</span>
+          </div>
+          <div class="panel-body">
+
+            <div class="error-bar" id="error-bar"></div>
+
+            <div class="form-group">
+              <label>Condition / Disease</label>
+              <select id="sel-condition" onchange="onConditionChange()">
+                <option value="">-- Loading conditions from backend... --</option>
+              </select>
+            </div>
+
+            <div class="cond-info" id="cond-info">
+              <div class="cond-info-title" id="ci-title"></div>
+              <div id="ci-desc"></div>
+            </div>
+
+            <div class="form-group">
+              <label>Patient Age</label>
+              <input type="number" id="inp-age" min="1" max="120" value="35" placeholder="Enter age (1-120)" />
+            </div>
+
+            <div class="form-group">
+              <label>Disease Severity</label>
+              <div class="severity-grid">
+                <button class="sev-btn" onclick="setSeverity('mild',this)">Mild</button>
+                <button class="sev-btn active" onclick="setSeverity('moderate',this)">Moderate</button>
+                <button class="sev-btn" onclick="setSeverity('severe',this)">Severe</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Biological Sex</label>
+              <select id="sel-gender">
+                <option value="unknown">Not specified</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+
+            <button class="submit-btn" id="submit-btn" onclick="runPrediction()" disabled>
+              <span>&#x27F3; &nbsp;Analyse Genetic Candidates</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Body viewer panel -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">3D Body Map</span>
+            <span class="panel-num">02 / 03</span>
+          </div>
+          <div class="panel-body" style="padding:16px">
+            <div class="body-toggle">
+              <button class="active" id="btn-before" onclick="setView('before')">Before</button>
+              <button id="btn-after" onclick="setView('after')">After Therapy</button>
+            </div>
+            <div class="body-display">
+              <div id="body-svg-wrap"></div>
+              <div class="rotate-hint">AUTO-ROTATING HOLOGRAM</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: Results -->
+      <div class="right-col">
+
+        <!-- Loading -->
+        <div class="loading-state" id="loading-state">
+          <div class="spinner"></div>
+          <div class="loading-text">Running ensemble prediction on ML backend...</div>
+        </div>
+
+        <!-- Summary banner -->
+        <div id="summary-wrap" style="display:none">
+          <div class="summary-banner" id="summary-banner"></div>
+        </div>
+
+        <!-- Results grid -->
+        <div id="results-wrap">
+          <div class="empty-state" id="empty-state">
+            <div class="empty-icon">&#x1F9EC;</div>
+            <div class="empty-title">Awaiting Patient Data</div>
+            <div class="empty-sub">
+              Select a condition, configure patient parameters,<br>
+              and run the ML ensemble to see cross-species<br>
+              genetic therapy candidates ranked by viability.
+            </div>
+          </div>
+          <div class="results-grid" id="results-grid" style="display:none"></div>
+        </div>
+
+        <!-- Model info panel -->
+        <div class="panel" id="model-info-panel" style="display:none">
+          <div class="panel-header">
+            <span class="panel-title">Model Configuration</span>
+            <span class="panel-num">03 / 03</span>
+          </div>
+          <div class="panel-body" id="model-info-body">
+            <!-- Populated dynamically from backend metrics -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Gene Detail Modal -->
+  <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
+    <div class="modal">
+      <div class="modal-title" id="m-gene">&mdash;</div>
+      <div class="modal-sub" id="m-sub">&mdash;</div>
+      <div class="modal-stat-grid" id="m-stats"></div>
+      <button class="modal-close" onclick="document.getElementById('modal').classList.remove('active')">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================================
+    // GeneBridge Frontend - ALL DATA FROM BACKEND ML API (zero hardcoded outputs)
+    // ============================================================================
+
+    const API = 'http://localhost:5000/api';
+
+    // ---- STATE ----
+    let severity = 'moderate';
+    let currentView = 'before';
+    let currentCondition = '';
+    let currentResults = null;
+    let backendOnline = false;
+
+    // Populated from backend endpoints -- starts empty
+    let CONDITION_META = {};
+    let SPECIES_META = {};
+
+    // ---- API FETCH (no fallbacks) ----
+    async function apiFetch(endpoint, method, body) {
+      method = method || 'GET';
+      const opts = { method: method, headers: { 'Content-Type': 'application/json' }, cache: 'no-store' };
+      if (body) opts.body = JSON.stringify(body);
+      
+      // Cache buster for GET requests
+      if (method === 'GET') {
+        const separator = endpoint.includes('?') ? '&' : '?';
+        endpoint = endpoint + separator + 't=' + Date.now();
+      }
+
+      const r = await fetch(API + endpoint, opts);
+      if (!r.ok) {
+        const txt = await r.text().catch(function () { return ''; });
+        throw new Error('HTTP ' + r.status + ': ' + txt);
+      }
+      return r.json();
+    }
+
+    // ---- ERROR DISPLAY ----
+    function showError(msg) {
+      var bar = document.getElementById('error-bar');
+      bar.textContent = msg;
+      bar.classList.add('active');
+    }
+    function clearError() {
+      var bar = document.getElementById('error-bar');
+      bar.textContent = '';
+      bar.classList.remove('active');
+    }
+
+    // ---- INITIALIZE EVERYTHING FROM BACKEND ----
+    async function initFromBackend() {
+      try {
+        // 1) Health check
+        await apiFetch('/health');
+        backendOnline = true;
+        document.getElementById('api-dot').style.background = 'var(--accent2)';
+        document.getElementById('api-dot').style.boxShadow = '0 0 6px var(--accent2)';
+        document.getElementById('api-label').textContent = 'API CONNECTED';
+
+        // 2) Fetch conditions from backend
+        var conditions = await apiFetch('/conditions');
+        CONDITION_META = conditions;
+        populateConditionDropdown(conditions);
+        document.getElementById('ml-dot').style.background = 'var(--accent2)';
+        document.getElementById('ml-dot').style.boxShadow = '0 0 6px var(--accent2)';
+        document.getElementById('ml-label').textContent = 'ML ENSEMBLE ONLINE';
+
+        // 3) Fetch species from backend
+        var species = await apiFetch('/species');
+        SPECIES_META = {};
+        for (var key in species) {
+          var val = species[key];
+          SPECIES_META[key] = {
+            common: val.common || key,
+            emoji: val.emoji || '',
+            sci: val.sci || key,
+            regen: val.regen || 0
+          };
+        }
+
+        // 4) Fetch training metrics from backend
+        var metrics = await apiFetch('/metrics');
+        var condCount = Object.keys(conditions).length;
+        var speciesCount = Object.keys(species).length;
+
+        // Update hero with real model stats
+        var ensM = metrics.ensemble || {};
+        document.getElementById('hero-sub').textContent =
+          'ML-powered platform mapping human disease genes to cross-species orthologs. ' +
+          'Random Forest + Gradient Boosting + SVM ensemble across ' + condCount + ' conditions ' +
+          'and ' + speciesCount + ' xenotransplantation donor species. ' +
+          'Ensemble accuracy: ' + ((ensM.accuracy || 0) * 100).toFixed(2) + '% | AUC: ' + ((ensM.auc || 0) * 100).toFixed(2) + '%';
+
+        // Update tags with real accuracy from each model
+        var rfM = metrics.rf || {};
+        var gbM = metrics.gb || {};
+        var svmM = metrics.svm || {};
+        document.getElementById('tag-row').innerHTML =
+          '<span class="tag blue">RF Acc: ' + ((rfM.accuracy || 0) * 100).toFixed(1) + '%</span>' +
+          '<span class="tag green">GB Acc: ' + ((gbM.accuracy || 0) * 100).toFixed(1) + '%</span>' +
+          '<span class="tag orange">SVM Acc: ' + ((svmM.accuracy || 0) * 100).toFixed(1) + '%</span>' +
+          '<span class="tag purple">Ens AUC: ' + ((ensM.auc || 0) * 100).toFixed(1) + '%</span>' +
+          '<span class="tag blue">' + condCount + ' Conditions</span>' +
+          '<span class="tag green">' + speciesCount + ' Donor Species</span>';
+
+        // Update data status
+        document.getElementById('data-dot').style.background = 'var(--accent)';
+        document.getElementById('data-dot').style.boxShadow = '0 0 6px var(--accent)';
+        document.getElementById('data-label').textContent = condCount + ' CONDITIONS | RF+GB+SVM';
+
+        // Populate model info panel with real metrics
+        document.getElementById('model-info-body').innerHTML =
+          '<div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; font-family:var(--mono); font-size:11px; color:var(--text2)">' +
+          '<div>' +
+          '<div style="color:var(--text3);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px">Random Forest</div>' +
+          '<div>Accuracy: ' + ((rfM.accuracy || 0) * 100).toFixed(2) + '%</div>' +
+          '<div>AUC: ' + ((rfM.auc || 0) * 100).toFixed(2) + '%</div>' +
+          '<div>Weight: 45%</div>' +
+          '</div>' +
+          '<div>' +
+          '<div style="color:var(--text3);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px">Gradient Boosting</div>' +
+          '<div>Accuracy: ' + ((gbM.accuracy || 0) * 100).toFixed(2) + '%</div>' +
+          '<div>AUC: ' + ((gbM.auc || 0) * 100).toFixed(2) + '%</div>' +
+          '<div>Weight: 35%</div>' +
+          '</div>' +
+          '<div>' +
+          '<div style="color:var(--text3);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px">Calibrated SVM</div>' +
+          '<div>Accuracy: ' + ((svmM.accuracy || 0) * 100).toFixed(2) + '%</div>' +
+          '<div>AUC: ' + ((svmM.auc || 0) * 100).toFixed(2) + '%</div>' +
+          '<div>Weight: 20%</div>' +
+          '</div>' +
+          '</div>';
+
+        clearError();
+        document.getElementById('submit-btn').disabled = false;
+
+      } catch (err) {
+        backendOnline = false;
+        document.getElementById('api-dot').style.background = 'var(--danger)';
+        document.getElementById('api-label').textContent = 'BACKEND OFFLINE';
+        document.getElementById('ml-dot').style.background = 'var(--danger)';
+        document.getElementById('ml-label').textContent = 'ML UNAVAILABLE';
+        document.getElementById('data-dot').style.background = 'var(--danger)';
+        document.getElementById('data-label').textContent = 'NO DATA';
+        document.getElementById('submit-btn').disabled = true;
+
+        showError('Backend unreachable at ' + API + '. Start with: python genebridge_backend.py -- ' + err.message);
+
+        document.getElementById('hero-sub').textContent =
+          'ML-powered platform mapping human disease genes to cross-species orthologs. ' +
+          'Backend is offline. Start the backend server to load models and run predictions.';
+        document.getElementById('tag-row').innerHTML = '<span class="tag orange">BACKEND REQUIRED</span>';
+
+        var sel = document.getElementById('sel-condition');
+        sel.innerHTML = '<option value="">-- Backend offline --</option>';
+      }
+    }
+
+    // ---- POPULATE CONDITION DROPDOWN FROM BACKEND ----
+    function populateConditionDropdown(conditions) {
+      var sel = document.getElementById('sel-condition');
+      sel.innerHTML = '<option value="">-- Select condition --</option>';
+      for (var key in conditions) {
+        var meta = conditions[key];
+        var opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = (meta.icon || '') + ' ' + (meta.label || key);
+        sel.appendChild(opt);
+      }
+    }
+
+    // ---- UPDATE METRICS ROW FROM PREDICTION RESULTS ----
+    function updatePredictionMetrics(bestResult) {
+      function pct(v) { return (v * 100).toFixed(1) + '%'; }
+      document.getElementById('mv-acc').textContent = pct(bestResult.viability_score);
+      document.getElementById('mv-rf').textContent = pct(bestResult.confidence_rf);
+      document.getElementById('mv-auc').textContent = pct(bestResult.confidence_gb);
+      document.getElementById('mv-svm').textContent = pct(bestResult.confidence_svm);
+      ['mc-acc', 'mc-auc', 'mc-rf', 'mc-svm'].forEach(function (id) {
+        setTimeout(function () { document.getElementById(id).classList.add('loaded'); }, 300);
+      });
+    }
+
+    // ---- RUN PREDICTION (backend only, no fallback) ----
+    async function runPrediction() {
+      if (!backendOnline) {
+        showError('Backend is offline. Cannot run prediction.');
+        return;
+      }
+
+      var condition = document.getElementById('sel-condition').value;
+      if (!condition) { alert('Please select a condition first.'); return; }
+
+      clearError();
+      document.getElementById('loading-state').classList.add('active');
+      document.getElementById('empty-state').style.display = 'none';
+      document.getElementById('results-grid').style.display = 'none';
+      document.getElementById('summary-wrap').style.display = 'none';
+      document.getElementById('submit-btn').disabled = true;
+
+      try {
+        var data = await apiFetch('/predict', 'POST', {
+          condition: condition,
+          age: +document.getElementById('inp-age').value,
+          severity: severity,
+          gender: document.getElementById('sel-gender').value
+        });
+
+        currentResults = data;
+        currentCondition = condition;
+
+        // Update body map
+        var meta = CONDITION_META[condition];
+        renderBody(meta ? (meta.body_regions || []) : [], currentView, data.results);
+        renderResults(data);
+        renderSummary(data);
+
+        // Update metrics from real ML output
+        if (data.results && data.results.length > 0) {
+          updatePredictionMetrics(data.results[0]);
+        }
+
+        document.getElementById('model-info-panel').style.display = 'block';
+
+      } catch (err) {
+        showError('Prediction failed: ' + err.message);
+        document.getElementById('empty-state').style.display = 'flex';
+      } finally {
+        document.getElementById('loading-state').classList.remove('active');
+        document.getElementById('submit-btn').disabled = false;
+      }
+    }
+
+    // ---- RENDER SUMMARY (from backend response) ----
+    function renderSummary(data) {
+      var s = data.summary;
+      var sm = SPECIES_META[s.best_species] || {};
+      var speciesTotal = Object.keys(SPECIES_META).length;
+      document.getElementById('summary-banner').innerHTML =
+        '<div class="sum-block">' +
+        '<div class="sum-label">Viable Species</div>' +
+        '<div class="sum-val">' + s.viable_species_count + ' / ' + speciesTotal + '</div>' +
+        '<div class="sum-sub">&ge;60% viability threshold</div>' +
+        '</div>' +
+        '<div class="sum-block">' +
+        '<div class="sum-label">Best Match</div>' +
+        '<div class="sum-val">' + (sm.emoji || '') + ' ' + (sm.common || s.best_species) + '</div>' +
+        '<div class="sum-sub">' + (s.best_viability * 100).toFixed(1) + '% viability score</div>' +
+        '</div>' +
+        '<div class="sum-block">' +
+        '<div class="sum-label">Top Target Genes</div>' +
+        '<div class="sum-val" style="font-size:13px;line-height:1.5">' + (s.best_genes || []).slice(0, 3).join(' &middot; ') + '</div>' +
+        '<div class="sum-sub">highest association score</div>' +
+        '</div>';
+      document.getElementById('summary-wrap').style.display = 'block';
+    }
+
+    // ---- RENDER RESULTS (from backend response) ----
+    function renderResults(data) {
+      var grid = document.getElementById('results-grid');
+      grid.innerHTML = '';
+      var condition = data.condition;
+
+      data.results.forEach(function (r, i) {
+        var sm = r.species_meta || SPECIES_META[r.species] || {};
+        var v = r.viability_score;
+        var vPct = (v * 100).toFixed(1);
+        var badgeClass = v >= 0.65 ? '' : v >= 0.45 ? 'mid' : 'low';
+
+        var card = document.createElement('div');
+        card.className = 'result-card' + (r.is_recommended ? ' recommended' : '');
+        card.style.animationDelay = (i * 0.06) + 's';
+
+        var topGenes = (r.top_genes || []).slice(0, 5);
+        var geneChips = topGenes.map(function (g) {
+          return '<span class="gene-chip" onclick="showGene(\'' + g + '\',\'' + condition + '\',\'' + r.species + '\')">' + g + '</span>';
+        }).join('');
+
+        card.innerHTML =
+          '<div class="rc-header">' +
+          '<div class="rc-species">' +
+          '<span class="species-emoji">' + (sm.emoji || '') + '</span>' +
+          '<div>' +
+          '<div class="species-name">' + (sm.common || r.species) + '</div>' +
+          '<div class="species-sci">' + (sm.sci || '') + '</div>' +
+          '</div>' +
+          '</div>' +
+          '<div class="viability-badge ' + badgeClass + '">' + vPct + '%</div>' +
+          '</div>' +
+          '<div class="rc-body">' +
+          bar('Viability (ensemble)', vPct, 'fill-green') +
+          bar('Seq. Similarity', (r.avg_sequence_similarity * 100).toFixed(1), 'fill-blue') +
+          bar('Expr. Correlation', (r.avg_expression_correlation * 100).toFixed(1), 'fill-orange') +
+          bar('Regen. Capacity', ((r.regen_score || 0) * 100).toFixed(0), 'fill-purple') +
+          '<div style="font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:10px;text-transform:uppercase;letter-spacing:0.08em">Top target genes</div>' +
+          '<div class="gene-list">' + geneChips + '</div>' +
+          (r.is_recommended ? '<div class="rc-recommend-badge">&#x2713; Recommended candidate</div>' : '') +
+          '</div>';
+        grid.appendChild(card);
+      });
+
+      grid.style.display = 'grid';
+    }
+
+    function bar(label, pct, cls) {
+      return '<div class="score-bar-wrap">' +
+        '<div class="score-bar-label"><span>' + label + '</span><span>' + pct + '%</span></div>' +
+        '<div class="score-bar-track">' +
+        '<div class="score-bar-fill ' + cls + '" style="width:' + pct + '%"></div>' +
+        '</div>' +
+        '</div>';
+    }
+
+    // ---- GENE DETAIL MODAL (backend only) ----
+    async function showGene(gene, condition, species) {
+      document.getElementById('m-gene').textContent = gene;
+      document.getElementById('m-sub').textContent = species + ' \u00b7 ' + condition.replace(/_/g, ' ');
+      document.getElementById('m-stats').innerHTML = '<div style="font-family:var(--mono);color:var(--text3);font-size:11px">Fetching gene data from ML backend...</div>';
+      document.getElementById('modal').classList.add('active');
+
+      try {
+        var d = await apiFetch('/gene-detail', 'POST', { gene: gene, condition: condition, species: species });
+        document.getElementById('m-stats').innerHTML =
+          '<div><div class="modal-stat-label">Avg. Viability</div><div class="modal-stat-val">' + (d.avg_viability * 100).toFixed(1) + '%</div></div>' +
+          '<div><div class="modal-stat-label">Seq. Similarity</div><div class="modal-stat-val">' + (d.avg_sequence_similarity * 100).toFixed(1) + '%</div></div>' +
+          '<div><div class="modal-stat-label">Expression Corr.</div><div class="modal-stat-val">' + (d.avg_expression_correlation * 100).toFixed(1) + '%</div></div>' +
+          '<div><div class="modal-stat-label">Positive Rate</div><div class="modal-stat-val">' + (d.positive_rate * 100).toFixed(1) + '%</div></div>' +
+          '<div><div class="modal-stat-label">Sample Count</div><div class="modal-stat-val">' + d.sample_count + '</div></div>' +
+          '<div><div class="modal-stat-label">Top Pathway</div><div class="modal-stat-val" style="font-size:13px;line-height:1.4">' + (Object.keys(d.pathways || {})[0] || '\u2014') + '</div></div>';
+      } catch (e) {
+        document.getElementById('m-stats').innerHTML = '<div style="color:var(--danger);font-family:var(--mono);font-size:11px">Backend error: ' + e.message + '</div>';
+      }
+    }
+
+    function closeModal(e) {
+      if (e.target === document.getElementById('modal'))
+        document.getElementById('modal').classList.remove('active');
+    }
+
+    // ---- SEVERITY ----
+    function setSeverity(val, btn) {
+      severity = val;
+      document.querySelectorAll('.sev-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    }
+
+    // ---- CONDITION CHANGE ----
+    function onConditionChange() {
+      var v = document.getElementById('sel-condition').value;
+      currentCondition = v;
+      var info = document.getElementById('cond-info');
+      if (v && CONDITION_META[v]) {
+        document.getElementById('ci-title').textContent = CONDITION_META[v].label || v;
+        document.getElementById('ci-desc').textContent = CONDITION_META[v].description || '';
+        info.classList.add('active');
+      } else {
+        info.classList.remove('active');
+      }
+      renderBody(v && CONDITION_META[v] ? (CONDITION_META[v].body_regions || []) : [], 'before', null);
+    }
+
+    // ---- BODY TOGGLE ----
+    function setView(v) {
+      currentView = v;
+      document.getElementById('btn-before').classList.toggle('active', v === 'before');
+      document.getElementById('btn-after').classList.toggle('active', v === 'after');
+      var regions = currentCondition && CONDITION_META[currentCondition]
+        ? (CONDITION_META[currentCondition].body_regions || []) : [];
+      renderBody(regions, v, currentResults ? currentResults.results : null);
+    }
+
+    // ---- 3D BODY ----
+    var BODY_PARTS = {
+      head: { d: 'M120,30 Q140,18 160,30 Q172,50 168,70 Q155,88 140,90 Q125,88 112,70 Q108,50 120,30 Z', cx: 140, cy: 58 },
+      neck: { d: 'M128,90 L152,90 L150,112 L130,112 Z', cx: 140, cy: 100 },
+      chest: { d: 'M100,112 L180,112 L190,175 L90,175 Z', cx: 140, cy: 143 },
+      abdomen: { d: 'M90,175 L190,175 L185,215 L95,215 Z', cx: 140, cy: 193 },
+      pelvis: { d: 'M95,215 L185,215 L180,240 L100,240 Z', cx: 140, cy: 227 },
+      spine: { d: 'M134,90 L146,90 L148,240 L132,240 Z', cx: 140, cy: 165 },
+      eyes: { d: 'M118,55 Q125,50 132,55 Q125,62 118,55 Z M148,55 Q155,50 162,55 Q155,62 148,55 Z', cx: 140, cy: 55 },
+      arms: { d: 'M60,112 Q80,115 90,175 Q70,180 50,170 Q42,140 60,112 Z M190,112 Q210,115 220,175 Q230,180 230,170 Q230,140 220,112 Z', cx: 140, cy: 143 },
+      legs: { d: 'M95,240 L130,240 L128,320 L90,320 Q85,285 95,240 Z M150,240 L185,240 L195,320 L152,320 Q148,285 150,240 Z', cx: 140, cy: 280 }
+    };
+
+    function renderBody(activeRegions, view, results) {
+      activeRegions = activeRegions || [];
+      view = view || 'before';
+      var wrap = document.getElementById('body-svg-wrap');
+      var isAfter = view === 'after';
+
+      var svg = '<svg width="200" height="340" viewBox="0 0 280 360" style="animation: holorotate 6s linear infinite; transform-style: preserve-3d; filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.4));">' +
+        '<defs>' +
+        '<pattern id="scan-base" patternUnits="userSpaceOnUse" width="4" height="4"><line x1="0" y1="2" x2="4" y2="2" stroke="#1a3d5c" stroke-width="1.5" opacity="0.6"/></pattern>' +
+        '<pattern id="scan-alert" patternUnits="userSpaceOnUse" width="4" height="4"><line x1="0" y1="2" x2="4" y2="2" stroke="#ff4757" stroke-width="1.5" opacity="0.8"/></pattern>' +
+        '<pattern id="scan-success" patternUnits="userSpaceOnUse" width="4" height="4"><line x1="0" y1="2" x2="4" y2="2" stroke="#00ff88" stroke-width="1.5" opacity="0.8"/></pattern>' +
+        '<filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+        '</defs>' +
+        '<g class="hologram-body">';
+
+      for (var name in BODY_PARTS) {
+        var part = BODY_PARTS[name];
+        var isActive = activeRegions.indexOf(name) >= 0;
+        var fill, stroke, opacity, filt;
+
+        if (!isActive) {
+          fill = 'url(#scan-base)';
+          stroke = 'rgba(0, 229, 255, 0.4)';
+          opacity = 0.8;
+          filt = '';
+        } else if (!isAfter) {
+          fill = 'url(#scan-alert)';
+          stroke = '#ff4757';
+          opacity = 1;
+          filt = 'filter:url(#glow)';
+        } else {
+          fill = 'url(#scan-success)';
+          stroke = '#00ff88';
+          opacity = 1;
+          filt = 'filter:url(#glow)';
+        }
+
+        svg += '<path d="' + part.d + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="2" opacity="' + opacity + '" style="' + filt + '"/>';
+
+        if (isActive && !isAfter) {
+          svg += '<circle cx="' + part.cx + '" cy="' + part.cy + '" r="6" fill="rgba(255,71,87,0.6)" stroke="none"><animate attributeName="r" values="6;16;6" dur="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0;1" dur="1.5s" repeatCount="indefinite"/></circle>';
+        } else if (isActive && isAfter) {
+          svg += '<circle cx="' + part.cx + '" cy="' + part.cy + '" r="8" fill="rgba(0,255,136,0.3)" stroke="#00ff88" stroke-width="1.5"/>';
+          svg += '<text x="' + part.cx + '" y="' + (part.cy + 3) + '" text-anchor="middle" font-size="9" fill="#00ff88" font-weight="bold">&#x2713;</text>';
+        }
+      }
+
+      svg += '</g></svg>';
+      wrap.innerHTML = svg;
+    }
+
+    // ---- DECORATIVE GENE NETWORK ----
+    function drawGeneNetwork() {
+      var nodes = [
+        { x: 140, y: 110, r: 12, c: '#00e5ff', label: 'PTEN' },
+        { x: 80, y: 70, r: 9, c: '#00ff88', label: 'BDNF' },
+        { x: 200, y: 70, r: 9, c: '#ff6b35', label: 'SOD1' },
+        { x: 60, y: 140, r: 8, c: '#bf5fff', label: 'DMD' },
+        { x: 220, y: 140, r: 8, c: '#00e5ff', label: 'SNCA' },
+        { x: 100, y: 180, r: 7, c: '#00ff88', label: 'LRRK2' },
+        { x: 180, y: 180, r: 7, c: '#ff6b35', label: 'GJB2' },
+        { x: 140, y: 50, r: 6, c: '#bf5fff', label: 'RPE65' }
+      ];
+
+      var linesHtml = '', nodesHtml = '';
+      var edges = [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [0, 7], [1, 3], [2, 4], [3, 5], [4, 6], [1, 7], [2, 7]];
+      edges.forEach(function (e) {
+        var n1 = nodes[e[0]], n2 = nodes[e[1]];
+        var t = Math.random() * 2 + 1;
+        linesHtml += '<line x1="' + n1.x + '" y1="' + n1.y + '" x2="' + n2.x + '" y2="' + n2.y + '" stroke="' + n1.c + '" stroke-width="' + (t * 0.5) + '" opacity="0.25"/>';
+      });
+      nodes.forEach(function (n) {
+        var dur = (2 + Math.random() * 2).toFixed(1);
+        nodesHtml += '<g>' +
+          '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + (n.r + 4) + '" fill="' + n.c + '" opacity="0.08"><animate attributeName="r" values="' + (n.r + 4) + ';' + (n.r + 8) + ';' + (n.r + 4) + '" dur="' + dur + 's" repeatCount="indefinite"/></circle>' +
+          '<circle cx="' + n.x + '" cy="' + n.y + '" r="' + n.r + '" fill="' + n.c + '" opacity="0.7"/>' +
+          '<text x="' + n.x + '" y="' + (n.y + 3) + '" text-anchor="middle" font-size="7" fill="white" font-family="monospace">' + n.label + '</text>' +
+          '</g>';
+      });
+      document.getElementById('net-lines').innerHTML = linesHtml;
+      document.getElementById('net-nodes').innerHTML = nodesHtml;
+    }
+
+    // ---- INIT ----
+    renderBody([]);
+    drawGeneNetwork();
+    initFromBackend();
+  </script>
+
+</body>
+
+</html>
