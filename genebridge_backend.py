@@ -23,7 +23,7 @@ from sklearn.metrics import (
 )
 from sklearn.calibration import CalibratedClassifierCV
 import joblib
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, send_file
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -246,6 +246,9 @@ def train_models():
 def create_app(artifacts):
     app = Flask(__name__)
 
+    @app.route("/")
+    def index():
+        return send_file(os.path.join(BASE_DIR, "genebridge_frontend.html"))
 
     @app.after_request
     def add_cors(response):
@@ -450,11 +453,19 @@ DONOR_SPECIES_LIST = {
     "octopus":        {"regen_score": 0.85},
 }
 
-if __name__ == "__main__":
-    model_path = os.path.join(MODEL_DIR, "genebridge_models.pkl")
-    # Force retraining to ensure the noise-injected data is loaded
+# Load or train the models on module load so 'app' is available for WSGI
+model_path = os.path.join(MODEL_DIR, "genebridge_models.pkl")
+if not os.path.exists(model_path):
     artifacts = train_models()
-    app = create_app(artifacts)
+else:
+    try:
+        artifacts = joblib.load(model_path)
+    except Exception:
+        artifacts = train_models()
+
+app = create_app(artifacts)
+
+if __name__ == "__main__":
     print("\nGeneBridge API running at http://localhost:5000")
     print("Endpoints:")
     print("  GET  /api/health")
