@@ -1,14 +1,17 @@
 """
 GeneBridge MLOps Traffic Simulator
 Sends simulated clinical prediction queries to populate Prometheus and Grafana metrics.
-Run: python scripts/simulate_traffic.py
+Run: python scripts/simulate_traffic.py [BASE_URL]
 """
 
+import sys
 import time
 import random
 import requests
 
-BASE_URL = "http://localhost:5000"
+# Default to localhost:5000 or allow passing custom URL (e.g. http://54.226.145.100:5000)
+BASE_URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:5000"
+BASE_URL = BASE_URL.rstrip("/")
 
 CONDITIONS = [
     "spinal_cord_injury",
@@ -47,11 +50,10 @@ def main():
             else:
                 print(f"[!] Request returned {res.status_code}: {res.text}")
         except Exception as e:
-            print(f"[!] Connection error: {e}")
+            print(f"[!] Connection error to {BASE_URL}: {e}")
 
         # Sleep briefly between queries to create continuous monitoring traffic
-        time.sleep(random.uniform(0.3, 1.2))
+        time.sleep(random.uniform(0.3, 1.0))
 
 if __name__ == "__main__":
     main()
-
