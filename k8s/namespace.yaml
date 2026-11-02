@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: genebridge-mlops
+  labels:
+    app.kubernetes.io/name: genebridge
+    app.kubernetes.io/part-of: genebridge-mlops
+

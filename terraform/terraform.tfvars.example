@@ -1,0 +1,9 @@
+aws_region    = "us-east-1"
+environment   = "production"
+cluster_name  = "genebridge-mlops-cluster"
+vpc_cidr      = "10.0.0.0/16"
+instance_types = ["t3.medium"]
+desired_nodes = 2
+min_nodes     = 1
+max_nodes     = 4
+

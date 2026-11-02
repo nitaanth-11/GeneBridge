@@ -23,7 +23,31 @@ from sklearn.metrics import (
 )
 from sklearn.calibration import CalibratedClassifierCV
 import joblib
+import time
 from flask import Flask, request, jsonify, make_response, send_file
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
+
+# ─── Prometheus Metrics for MLOps Monitoring ─────────────────────────────────
+PREDICTION_REQUESTS = Counter(
+    "genebridge_predictions_total",
+    "Total inference requests",
+    ["condition", "severity", "status"]
+)
+INFERENCE_LATENCY = Histogram(
+    "genebridge_inference_duration_seconds",
+    "Inference latency in seconds",
+    buckets=[0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5]
+)
+API_REQUEST_COUNT = Counter(
+    "genebridge_api_requests_total",
+    "Total API requests received",
+    ["endpoint", "method", "status"]
+)
+MODEL_ACCURACY_GAUGE = Gauge(
+    "genebridge_model_accuracy_ratio",
+    "Accuracy score of trained models",
+    ["model_name"]
+)
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -251,10 +275,16 @@ def create_app(artifacts):
         return send_file(os.path.join(BASE_DIR, "genebridge_frontend.html"))
 
     @app.after_request
-    def add_cors(response):
+    def record_metrics_and_cors(response):
         response.headers["Access-Control-Allow-Origin"] = "*"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type"
         response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+        if request.path != "/metrics":
+            API_REQUEST_COUNT.labels(
+                endpoint=request.path,
+                method=request.method,
+                status=response.status_code
+            ).inc()
         return response
 
     rf      = artifacts["rf"]
@@ -287,6 +317,15 @@ def create_app(artifacts):
         X_mat = subset[feature_cols].values
         return X_mat, subset
 
+    for m_name in ["rf", "gb", "svm", "ensemble"]:
+        if m_name in metrics and "accuracy" in metrics[m_name]:
+            MODEL_ACCURACY_GAUGE.labels(model_name=m_name).set(float(metrics[m_name]["accuracy"]))
+
+    @app.route("/metrics", methods=["GET"])
+    def prometheus_metrics():
+        """Prometheus metrics exposition endpoint."""
+        return generate_latest(), 200, {"Content-Type": CONTENT_TYPE_LATEST}
+
     @app.route("/api/health", methods=["GET"])
     def health():
         return jsonify({"status": "ok", "models": list(metrics.keys())})
@@ -305,13 +344,15 @@ def create_app(artifacts):
 
     @app.route("/api/predict", methods=["POST"])
     def predict():
-        data = request.get_json()
+        start_time = time.time()
+        data = request.get_json() or {}
         condition = data.get("condition", "").strip().lower().replace(" ", "_")
         age        = int(data.get("age", 35))
         severity   = data.get("severity", "moderate")  # mild / moderate / severe
         gender     = data.get("gender", "unknown")
 
         if condition not in CONDITION_META:
+            PREDICTION_REQUESTS.labels(condition=condition or "unknown", severity=severity, status="error").inc()
             return jsonify({"error": f"Unknown condition: {condition}"}), 400
 
         severity_mult = {"mild": 1.05, "moderate": 1.0, "severe": 0.88}.get(severity, 1.0)
@@ -387,6 +428,9 @@ def create_app(artifacts):
         # Summary stats
         viable_count = sum(1 for r in results if r["is_recommended"])
         best = results[0]
+
+        INFERENCE_LATENCY.observe(time.time() - start_time)
+        PREDICTION_REQUESTS.labels(condition=condition, severity=severity, status="success").inc()
 
         return jsonify({
             "condition": condition,

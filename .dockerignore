@@ -1,0 +1,14 @@
+.git
+.gitignore
+.vscode
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+terraform/
+k8s/
+.github/
+docker-compose.yml
+monitoring/
+

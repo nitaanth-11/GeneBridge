@@ -5,6 +5,22 @@ RF + Gradient Boosting + Calibrated SVM Ensemble · 11,520 training records · 8
 
 ---
 
+## 🚀 MLOps Architecture & Production Engineering
+GeneBridge is built with an end-to-end MLOps pipeline ready for cloud and enterprise deployments:
+
+| MLOps Component | Technology | File Location | Purpose |
+| :--- | :--- | :--- | :--- |
+| **GitHub Versioning** | Git Tags + Semantic Versioning | `docs/MLOPS_GUIDE.md` | `v1.0.0` release tracking & model artifact versioning |
+| **CI/CD Pipeline** | GitHub Actions | `.github/workflows/mlops-ci-cd.yaml` | Automated linting (`flake8`), test validation (`pytest`), Docker build & push (`ghcr.io`) |
+| **Containerization** | Docker & Compose | `Dockerfile`, `docker-compose.yml` | Multi-stage production container with health checks |
+| **Orchestration** | Kubernetes & HPA | `k8s/` | High availability deployments, self-healing probes, and Horizontal Pod Autoscaling (2-8 replicas) |
+| **Infra as Code (IaC)** | Terraform | `terraform/` | Automated AWS EKS cluster, VPC, subnets, and node group provisioning |
+| **Metrics & Monitoring** | Prometheus & Grafana | `monitoring/`, `/metrics` | Real-time P95 latency tracking, inference throughput, model accuracy gauges |
+
+*For complete deployment and operational instructions, see the **[MLOps Operations Guide](docs/MLOPS_GUIDE.md)**.*
+
+---
+
 ## Deployment on Render
 
 This project is fully structured to be deployed on [Render](https://render.com/) with a single click or Blueprint configuration.
@@ -24,6 +40,22 @@ This project is fully structured to be deployed on [Render](https://render.com/)
    - **Start Command**: `gunicorn genebridge_backend:app`
 4. Under **Environment Variables**, add:
    - `PYTHON_VERSION`: `3.10.12` (or your preferred version)
+
+---
+
+## 🚀 MLOps Architecture & Production Engineering
+GeneBridge is built with an end-to-end MLOps pipeline ready for cloud and enterprise deployments:
+
+| MLOps Component | Technology | File Location | Purpose |
+| :--- | :--- | :--- | :--- |
+| **GitHub Versioning** | Git Tags + Semantic Versioning | `docs/MLOPS_GUIDE.md` | `v1.0.0` release tracking & model artifact versioning |
+| **CI/CD Pipeline** | GitHub Actions | `.github/workflows/mlops-ci-cd.yaml` | Automated linting (`flake8`), test validation (`pytest`), Docker build & push (`ghcr.io`) |
+| **Containerization** | Docker & Compose | `Dockerfile`, `docker-compose.yml` | Multi-stage production container with health checks |
+| **Orchestration** | Kubernetes & HPA | `k8s/` | High availability deployments, self-healing probes, and Horizontal Pod Autoscaling (2-8 replicas) |
+| **Infra as Code (IaC)** | Terraform | `terraform/` | Automated AWS EKS cluster, VPC, subnets, and node group provisioning |
+| **Metrics & Monitoring** | Prometheus & Grafana | `monitoring/`, `/metrics` | Real-time P95 latency tracking, inference throughput, model accuracy gauges |
+
+*For complete deployment and operational instructions, see the **[MLOps Operations Guide](docs/MLOPS_GUIDE.md)**.*
 
 ---
 
