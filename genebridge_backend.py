@@ -57,7 +57,10 @@ if not os.path.exists(DATA_PATH):
 if not os.path.exists(DATA_PATH):
     DATA_PATH = os.path.join(BASE_DIR, "genebridge_dataset.csv")
 MODEL_DIR = os.path.join(BASE_DIR, "models")
-os.makedirs(MODEL_DIR, exist_ok=True)
+try:
+    os.makedirs(MODEL_DIR, exist_ok=True)
+except Exception:
+    pass
 
 # ─── Feature columns ──────────────────────────────────────────────────────────
 NUMERIC_FEATURES = [
@@ -260,8 +263,11 @@ def train_models():
             "ensemble": {"accuracy": min(ens_acc, 0.923), "auc": min(ens_auc, 0.918)}
         }
     }
-    joblib.dump(artifacts, os.path.join(MODEL_DIR, "genebridge_models.pkl"))
-    print(f"\nModels saved to {MODEL_DIR}/genebridge_models.pkl")
+    try:
+        joblib.dump(artifacts, os.path.join(MODEL_DIR, "genebridge_models.pkl"))
+        print(f"\nModels saved to {MODEL_DIR}/genebridge_models.pkl")
+    except Exception as e:
+        print(f"\nNotice: Skipping disk save ({e}). Using in-memory models.")
     return artifacts
 
 
